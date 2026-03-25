@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Password Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inder&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inder', sans-serif;
+    min-height: 100vh;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+  }
+  .label-top {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #aaa;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .output-wrap {
+    background: #111;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 8px;
+    position: relative;
+    height: 80px;
+    overflow: hidden;
+    transition: background 0.4s;
+  }
+  #password-display {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    color: #fff;
+    word-break: break-all;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-align: center;
+  }
+  .strength-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #aaa;
+    margin-bottom: 28px;
+  }
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 10px;
+  }
+  .slider-label span:last-child {
+    font-family: 'JetBrains Mono', monospace;
+    color: #666;
+  }
+  .ai-body input[type=range] {
+    width: 100%;
+    accent-color: #888;
+    cursor: pointer;
+  }
+  .toggles {
+    display: flex;
+    gap: 8px;
+  }
+  .toggle-btn {
+    flex: 1;
+    padding: 8px 4px;
+    border-radius: 8px;
+    border: 1.5px solid #e0e0e0;
+    background: #fff;
+    color: #aaa;
+    font-family: 'Inder', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .toggle-btn:hover {
+    border-color: #888;
+    color: #333;
+    background: #f5f5f5;
+  }
+  .toggle-btn.active {
+    border-color: #888;
+    background: #f0f0f0;
+    color: #333;
+  }
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .btn-action {
+    width: 100%;
+    height: 50px;
+    padding: 0 16px;
+    background: #f0f0f0;
+    color: #333;
+    border: 1.5px solid #ccc;
+    border-radius: 10px;
+    font-family: 'Inder', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-action:hover { background: #e6e6e6; border-color: #999; }
+  .btn-action svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .actions-row {
+    display: flex;
+    gap: 10px;
+  }
+  .btn-icon {
+    flex: 1;
+    height: 50px;
+    background: #fff;
+    color: #888;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-icon:hover { background: #f5f5f5; border-color: #bbb; color: #444; }
+  .btn-icon svg { width: 17px; height: 17px; }
+  .btn-save {
+    padding: 13px 16px;
+    background: #f0f0f0;
+    color: #333;
+    border: 1.5px solid #ccc;
+    border-radius: 10px;
+    font-family: 'Inder', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-save:hover { background: #e6e6e6; border-color: #999; }
+  .btn-save svg { width: 15px; height: 15px; flex-shrink: 0; }
+  /* ── AI accordion ── */
+  .ai-block {
+    margin-top: 10px;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .ai-toggle {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 13px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-family: 'Inder', sans-serif;
+    font-size: 13px;
+    color: #888;
+    transition: background 0.2s;
+  }
+  .ai-toggle:hover { background: #fafafa; }
+  .ai-toggle-left { display: flex; align-items: center; gap: 7px; }
+  .ai-chevron {
+    width: 14px; height: 14px;
+    transition: transform 0.25s;
+    color: #ccc;
+  }
+  .ai-block.open .ai-chevron { transform: rotate(180deg); }
+  .ai-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s;
+    padding: 0 16px;
+  }
+  .ai-block.open .ai-body {
+    max-height: 400px;
+    padding: 0 16px 16px;
+  }
+  .ai-section-label {
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #ccc;
+    margin-bottom: 8px;
+    margin-top: 14px;
+  }
+  .ai-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .ai-tag, .ai-sep {
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1.5px solid #e8e8e8;
+    background: #fff;
+    color: #aaa;
+    font-family: 'Inder', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .ai-tag:hover, .ai-sep:hover { border-color: #bbb; color: #555; }
+  .ai-tag.active { border-color: #888; background: #f0f0f0; color: #333; }
+  .ai-sep.active { border-color: #888; background: #f0f0f0; color: #333; }
+  .ai-custom {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 8px;
+    font-family: 'Inder', sans-serif;
+    font-size: 13px;
+    color: #333;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-top: 2px;
+  }
+  .ai-custom:focus { border-color: #aaa; }
+  .ai-custom::placeholder { color: #ccc; }
+  .ai-gen-btn {
+    width: 100%;
+    height: 44px;
+    margin-top: 14px;
+    background: #f7f7f7;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    font-family: 'Inder', sans-serif;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .ai-gen-btn:hover { background: #efefef; border-color: #bbb; color: #333; }
+  .ai-gen-btn.loading { color: #bbb; pointer-events: none; }
+  /* ── Footer ── */
+  .site-footer {
+    margin-top: 24px;
+    text-align: center;
+    padding-bottom: 8px;
+  }
+  .footer-link {
+    background: none;
+    border: none;
+    font-family: 'Inder', sans-serif;
+    font-size: 12px;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .footer-link:hover { color: #888; }
+  /* ── Onboarding ── */
+  .onboarding-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 24px;
+    backdrop-filter: blur(4px);
+  }
+  .onboarding-popup {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px 36px 28px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 16px 64px rgba(0,0,0,0.14);
+    animation: popIn 0.22s ease;
+  }
+  .ob-slide { display: none; }
+  .ob-slide.active { display: block; }
+  .ob-icon {
+    width: 52px;
+    height: 52px;
+    background: #f5f5f5;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .ob-icon svg { width: 22px; height: 22px; color: #555; }
+  .ob-title {
+    font-size: 18px;
+    color: #111;
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .ob-text {
+    font-size: 13px;
+    color: #777;
+    line-height: 1.7;
+    margin-bottom: 18px;
+  }
+  .ob-action-link {
+    display: inline-block;
+    font-family: 'Inder', sans-serif;
+    font-size: 12px;
+    color: #555;
+    text-decoration: none;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 1px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .ob-action-link:hover { color: #111; border-color: #888; }
+  .ob-diagram {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .ob-diag-node {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: #f5f5f5;
+    color: #666;
+    border: 1px solid #eee;
+  }
+  .ob-diag-active { background: #f0f0f0; color: #222; border-color: #ccc; font-weight: 600; }
+  .ob-diag-blocked { color: #e53935; border-color: #fdd; background: #fff5f5; text-decoration: line-through; }
+  .ob-diag-arrow { color: #ccc; font-size: 13px; }
+  .ob-diag-sep { color: #ddd; margin: 0 4px; }
+  .ob-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 28px;
+  }
+  .ob-dots { display: flex; gap: 6px; }
+  .ob-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    transition: background 0.2s, width 0.2s;
+  }
+  .ob-dot.active { background: #555; width: 18px; border-radius: 3px; }
+  .ob-btns { display: flex; gap: 10px; align-items: center; }
+  .ob-btn-skip {
+    background: none; border: none;
+    font-family: 'Inder', sans-serif;
+    font-size: 13px; color: #ccc;
+    cursor: pointer; transition: color 0.2s;
+  }
+  .ob-btn-skip:hover { color: #888; }
+  .ob-btn-next {
+    padding: 9px 20px;
+    background: #111; color: #fff;
+    border: none; border-radius: 8px;
+    font-family: 'Inder', sans-serif;
+    font-size: 13px; cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .ob-btn-next:hover { opacity: 0.85; }
+  /* ── Popup ── */
+  .popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.32);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+    backdrop-filter: blur(3px);
+  }
+  .popup {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 8px 48px rgba(0,0,0,0.15);
+    animation: popIn 0.18s ease;
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0);   }
+  }
+  .popup-title {
+    font-size: 17px;
+    color: #111;
+    margin-bottom: 14px;
+  }
+  .popup-pwd {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #888;
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 10px 14px;
+    word-break: break-all;
+    line-height: 1.6;
+    margin-bottom: 22px;
+  }
+  .popup-field-label {
+    display: block;
+    font-size: 11px;
+    color: #bbb;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 8px;
+  }
+  .popup-input-row {
+    display: flex;
+    align-items: stretch;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 22px;
+    transition: border-color 0.2s;
+  }
+  .popup-input-row:focus-within { border-color: #111; }
+  .popup-input {
+    flex: 1;
+    padding: 11px 14px;
+    border: none;
+    outline: none;
+    font-family: 'Inder', sans-serif;
+    font-size: 14px;
+    color: #111;
+    background: #fff;
+  }
+  .popup-input::placeholder { color: #ccc; }
+  .popup-ext {
+    padding: 0 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #bbb;
+    background: #f9f9f9;
+    border-left: 1.5px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    user-select: none;
+  }
+  .popup-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .popup-cancel {
+    flex: 1;
+    padding: 12px;
+    background: #fff;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    font-family: 'Inder', sans-serif;
+    font-size: 14px;
+    color: #888;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .popup-cancel:hover { border-color: #aaa; color: #555; }
+  .popup-download {
+    flex: 1;
+    padding: 12px;
+    background: #111;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Inder', sans-serif;
+    font-size: 14px;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .popup-download:disabled {
+    background: #e8e8e8;
+    color: #bbb;
+    cursor: not-allowed;
+  }
+  .popup-download:not(:disabled):hover { opacity: 0.82; }
+  @media (max-width: 480px) {
+    .card { padding: 28px 20px; }
+    .actions { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="output-wrap" id="output-wrap">
+    <div id="password-display">—</div>
+  </div>
+  <div class="strength-meta">
+    <span id="strength-label" style="color:#aaa">—</span>
+    <span id="entropy-label">—</span>
+  </div>
+  <!-- Cryptograph accordion -->
+  <div class="ai-block open" id="crypto-block">
+    <button class="ai-toggle" id="crypto-toggle">
+      <span class="ai-toggle-left">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;opacity:0.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span data-i18n="cryptograph">Cryptograph</span>
+      </span>
+      <svg class="ai-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="ai-body" id="crypto-body">
+      <input type="range" id="length-slider" min="8" max="64" value="32">
+      <div class="toggles">
+        <button class="toggle-btn active" data-set="uppercase">A–Z</button>
+        <button class="toggle-btn active" data-set="lowercase">a–z</button>
+        <button class="toggle-btn active" data-set="digits">0–9</button>
+        <button class="toggle-btn active" data-set="symbols">!@#</button>
+      </div>
+    </div>
+  </div>
+  <!-- AI accordion -->
+  <div class="ai-block" id="ai-block" style="margin-top:8px">
+    <button class="ai-toggle" id="ai-toggle">
+      <span class="ai-toggle-left">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;opacity:0.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        <span data-i18n="aiMode">AI Mode</span>
+      </span>
+      <svg class="ai-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="ai-body" id="ai-body">
+      <div class="ai-section-label" data-i18n="wordTheme">Word Theme</div>
+      <div class="ai-tags" id="ai-tags">
+        <button class="ai-tag" data-theme="colors" data-i18n="colors">Colors</button>
+        <button class="ai-tag" data-theme="food" data-i18n="food">Food</button>
+        <button class="ai-tag" data-theme="animals" data-i18n="animals">Animals</button>
+        <button class="ai-tag" data-theme="cities" data-i18n="cities">Cities</button>
+        <button class="ai-tag" data-theme="nature" data-i18n="nature">Nature</button>
+        <button class="ai-tag" data-theme="names" data-i18n="names">Names</button>
+        <button class="ai-tag" data-theme="space" data-i18n="space">Space</button>
+        <button class="ai-tag" data-theme="music" data-i18n="music">Music</button>
+      </div>
+      <div class="ai-section-label" style="margin-top:14px" data-i18n="separator">Separator</div>
+      <div class="ai-tags">
+        <button class="ai-sep active" data-sep="-" data-i18n="sepHyphen">hyphen  red-apple</button>
+        <button class="ai-sep" data-sep="." data-i18n="sepDot">dot  red.apple</button>
+        <button class="ai-sep" data-sep="_" data-i18n="sepUnderscore">underscore  red_apple</button>
+      </div>
+      <div class="ai-section-label" style="margin-top:14px" data-i18n="customTheme">Custom Theme</div>
+      <input class="ai-custom" id="ai-custom" type="text" data-i18n-placeholder="customPlaceholder" placeholder="e.g.: Japanese cities, 80s musicians…" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <!-- Actions -->
+  <div class="actions" style="margin-top:10px">
+    <button class="btn-action" id="gen-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      <span data-i18n="generate">Generate</span>
+    </button>
+    <div class="actions-row">
+      <button class="btn-icon" id="copy-btn" data-i18n-title="copy" title="Copy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+      <button class="btn-icon" id="save-btn" data-i18n-title="savePassword" title="Save password">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+    </div>
+  </div>
+  <!-- Footer -->
+  <div class="site-footer">
+    <button class="footer-link" id="onboarding-link" data-i18n="about">About</button>
+    <span style="color:#e0e0e0;margin:0 6px">·</span>
+    <button class="footer-link" id="lang-toggle">RU</button>
+  </div>
+</div>
+<!-- ── Onboarding popup ── -->
+<div id="onboarding-overlay" class="onboarding-overlay" style="display:none">
+  <div class="onboarding-popup">
+    <!-- Slide 1 -->
+    <div class="ob-slide active" data-slide="0">
+      <div class="ob-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      </div>
+      <div class="ob-title" data-i18n="ob1Title">Fully Transparent</div>
+      <div class="ob-text" data-i18n="ob1Text">The page source code is open. See for yourself — no magic, just math.</div>
+      <a class="ob-action-link" href="https://github.com/arbatskiy-ux/cryptograf" target="_blank" data-i18n="ob1Link">View source on GitHub →</a>
+    </div>
+    <!-- Slide 2 -->
+    <div class="ob-slide" data-slide="1">
+      <div class="ob-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div class="ob-title" data-i18n="ob2Title">Password Never Leaves Your Browser</div>
+      <div class="ob-text" data-i18n="ob2Text">Generation happens right here. No server ever receives your password — not even ours.</div>
+      <div class="ob-diagram">
+        <span class="ob-diag-node" data-i18n="ob2Browser">Browser</span>
+        <span class="ob-diag-arrow">→</span>
+        <span class="ob-diag-node ob-diag-active" data-i18n="ob2Password">Password</span>
+        <span class="ob-diag-sep">·</span>
+        <span class="ob-diag-node ob-diag-blocked" data-i18n="ob2Server">Server ✕</span>
+      </div>
+    </div>
+    <!-- Slide 3 -->
+    <div class="ob-slide" data-slide="2">
+      <div class="ob-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+      </div>
+      <div class="ob-title" data-i18n="ob3Title">Works Offline</div>
+      <div class="ob-text" data-i18n="ob3Text">Disconnect from the internet and try it. The page keeps working — because everything is already on your device.</div>
+    </div>
+    <!-- Slide 4 -->
+    <div class="ob-slide" data-slide="3">
+      <div class="ob-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      </div>
+      <div class="ob-title" data-i18n="ob4Title">AI Mode — Honestly</div>
+      <div class="ob-text" data-i18n="ob4Text">When generating words, only the theme is sent to the server. The password itself is assembled in your browser.</div>
+      <div class="ob-diagram">
+        <span class="ob-diag-node" data-i18n="ob4Theme">Theme</span>
+        <span class="ob-diag-arrow">→</span>
+        <span class="ob-diag-node" data-i18n="ob4Server">Server</span>
+        <span class="ob-diag-arrow">→</span>
+        <span class="ob-diag-node" data-i18n="ob4Words">Words</span>
+        <span class="ob-diag-arrow">→</span>
+        <span class="ob-diag-node ob-diag-active" data-i18n="ob4Password">Password</span>
+      </div>
+    </div>
+    <!-- Nav -->
+    <div class="ob-nav">
+      <div class="ob-dots" id="ob-dots">
+        <span class="ob-dot active"></span>
+        <span class="ob-dot"></span>
+        <span class="ob-dot"></span>
+        <span class="ob-dot"></span>
+      </div>
+      <div class="ob-btns">
+        <button class="ob-btn-skip" id="ob-skip" data-i18n="skip">Skip</button>
+        <button class="ob-btn-next" id="ob-next" data-i18n="next">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="popup-overlay" class="popup-overlay" style="display:none">
+  <div class="popup">
+    <div class="popup-title" data-i18n="savePasswordTitle">Save Password</div>
+    <div class="popup-pwd" id="popup-pwd-preview"></div>
+    <label class="popup-field-label" data-i18n="fileName">File Name</label>
+    <div class="popup-input-row">
+      <input type="text" id="filename-input" class="popup-input" data-i18n-placeholder="fileNamePlaceholder" placeholder="e.g.: vps-root" autocomplete="off" spellcheck="false">
+      <span class="popup-ext">.txt</span>
+    </div>
+    <div class="popup-actions">
+      <button class="popup-cancel" id="popup-cancel" data-i18n="cancel">Cancel</button>
+      <button class="popup-download" id="popup-download" disabled data-i18n="download">Download</button>
+    </div>
+  </div>
+</div>
+<script>
+// ── i18n ──
+const I18N = {
+  en: {
+    cryptograph: 'Cryptograph', aiMode: 'AI Mode',
+    wordTheme: 'Word Theme', separator: 'Separator', customTheme: 'Custom Theme',
+    colors: 'Colors', food: 'Food', animals: 'Animals', cities: 'Cities',
+    nature: 'Nature', names: 'Names', space: 'Space', music: 'Music',
+    sepHyphen: 'hyphen  red-apple', sepDot: 'dot  red.apple', sepUnderscore: 'underscore  red_apple',
+    customPlaceholder: 'e.g.: Japanese cities, 80s musicians…',
+    generate: 'Generate', copy: 'Copy', savePassword: 'Save password', about: 'About',
+    generating: 'Generating…',
+    weak: 'Weak', fair: 'Fair', good: 'Good', excellent: 'Excellent',
+    bits: 'bits', chars: 'chars',
+    ob1Title: 'Fully Transparent',
+    ob1Text: 'The page source code is open. See for yourself — no magic, just math.',
+    ob1Link: 'View source on GitHub →',
+    ob2Title: 'Password Never Leaves Your Browser',
+    ob2Text: 'Generation happens right here. No server ever receives your password — not even ours.',
+    ob2Browser: 'Browser', ob2Password: 'Password', ob2Server: 'Server ✕',
+    ob3Title: 'Works Offline',
+    ob3Text: 'Disconnect from the internet and try it. The page keeps working — because everything is already on your device.',
+    ob4Title: 'AI Mode — Honestly',
+    ob4Text: 'When generating words, only the theme is sent to the server. The password itself is assembled in your browser.',
+    ob4Theme: 'Theme', ob4Server: 'Server', ob4Words: 'Words', ob4Password: 'Password',
+    skip: 'Skip', next: 'Next', gotIt: 'Got it',
+    savePasswordTitle: 'Save Password', fileName: 'File Name',
+    fileNamePlaceholder: 'e.g.: vps-root',
+    cancel: 'Cancel', download: 'Download',
+  },
+  ru: {
+    cryptograph: 'Криптограф', aiMode: 'AI‑режим',
+    wordTheme: 'Тематика слов', separator: 'Разделитель', customTheme: 'Своя тема',
+    colors: 'Цвета', food: 'Еда', animals: 'Животные', cities: 'Города',
+    nature: 'Природа', names: 'Имена', space: 'Космос', music: 'Музыка',
+    sepHyphen: 'дефис  red-apple', sepDot: 'точка  red.apple', sepUnderscore: 'нижнее  red_apple',
+    customPlaceholder: 'например: японские города, музыканты 80-х…',
+    generate: 'Сгенерировать', copy: 'Копировать', savePassword: 'Сохранить пароль', about: 'О сервисе',
+    generating: 'Генерирую…',
+    weak: 'Слабый', fair: 'Средний', good: 'Хороший', excellent: 'Отличный',
+    bits: 'бит', chars: 'символов',
+    ob1Title: 'Всё на виду',
+    ob1Text: 'Код страницы открыт. Убедитесь сами — никакой магии, только математика.',
+    ob1Link: 'Посмотреть исходник на GitHub →',
+    ob2Title: 'Пароль не покидает браузер',
+    ob2Text: 'Генерация происходит прямо здесь. Ни один сервер не получает ваш пароль — даже наш.',
+    ob2Browser: 'Браузер', ob2Password: 'Пароль', ob2Server: 'Сервер ✕',
+    ob3Title: 'Работает без интернета',
+    ob3Text: 'Отключите сеть и попробуйте. Страница продолжит работу — потому что всё уже у вас.',
+    ob4Title: 'AI‑режим — честно',
+    ob4Text: 'При генерации слов на сервер уходит только тема. Сам пароль собирается у вас в браузере.',
+    ob4Theme: 'Тема', ob4Server: 'Сервер', ob4Words: 'Слова', ob4Password: 'Пароль',
+    skip: 'Пропустить', next: 'Далее', gotIt: 'Понятно',
+    savePasswordTitle: 'Сохранить пароль', fileName: 'Название файла',
+    fileNamePlaceholder: 'например: vps-root',
+    cancel: 'Отмена', download: 'Скачать',
+  }
+};
+let currentLang = localStorage.getItem('cryptograf_lang') || 'en';
+function t(key) { return (I18N[currentLang] || I18N.en)[key] || key; }
+function applyLang() {
+  document.documentElement.lang = currentLang;
+  document.title = currentLang === 'ru' ? 'Генератор паролей' : 'Password Generator';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    el.title = t(el.dataset.i18nTitle);
+  });
+  document.getElementById('lang-toggle').textContent = currentLang === 'en' ? 'RU' : 'EN';
+  // Re-render strength/entropy if password exists
+  if (currentPassword) {
+    const bits = entropy(currentPassword);
+    const s = strengthInfo(bits);
+    document.getElementById('strength-label').textContent = s.label;
+    document.getElementById('entropy-label').textContent = bits + ' ' + t('bits') + ' · ' + currentPassword.length + ' ' + t('chars');
+  }
+}
+document.getElementById('lang-toggle').addEventListener('click', () => {
+  currentLang = currentLang === 'en' ? 'ru' : 'en';
+  try { localStorage.setItem('cryptograf_lang', currentLang); } catch(e) {}
+  applyLang();
+});
+
+const CHARSETS = {
+  uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  lowercase: 'abcdefghijklmnopqrstuvwxyz',
+  digits: '0123456789',
+  symbols: '!@#$%^&*()-_=+[]{}|;:,.<>?'
+};
+const active = { uppercase: true, lowercase: true, digits: true, symbols: true };
+let currentPassword = '';
+function buildPool() {
+  let pool = '';
+  if (active.uppercase) pool += CHARSETS.uppercase;
+  if (active.lowercase) pool += CHARSETS.lowercase;
+  if (active.digits)    pool += CHARSETS.digits;
+  if (active.symbols)   pool += CHARSETS.symbols;
+  return pool || CHARSETS.lowercase;
+}
+function generate(length) {
+  const pool = buildPool();
+  const arr = new Uint32Array(length);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, x => pool[x % pool.length]).join('');
+}
+function entropy(pwd) {
+  const chars = new Set(pwd).size;
+  return Math.round(pwd.length * Math.log2(chars || 1));
+}
+function strengthInfo(bits) {
+  if (bits < 40) return { label: t('weak'),      color: '#e53935', width: '20%'  };
+  if (bits < 60) return { label: t('fair'),      color: '#fb8c00', width: '45%'  };
+  if (bits < 80) return { label: t('good'),      color: '#43a047', width: '70%'  };
+  return             { label: t('excellent'), color: '#43a047', width: '100%' };
+}
+function updateUI(pwd) {
+  currentPassword = pwd;
+  document.getElementById('password-display').textContent = pwd;
+  const bits = entropy(pwd);
+  const s = strengthInfo(bits);
+  document.getElementById('output-wrap').style.background = s.color;
+  document.getElementById('strength-label').textContent = s.label;
+  document.getElementById('strength-label').style.color = s.color;
+  document.getElementById('entropy-label').textContent = bits + ' ' + t('bits') + ' · ' + pwd.length + ' ' + t('chars');
+}
+function copyText(text, btn) {
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    flash(btn);
+  };
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => flash(btn)).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+function flash(btn) {
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><polyline points="20 6 9 17 4 12"/></svg>';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+}
+// Confetti
+function launchConfetti() {
+  const wrap = document.getElementById('output-wrap');
+  const rect = wrap.getBoundingClientRect();
+  const colors = ['#ff4757','#ffa502','#2ed573','#1e90ff','#eccc68','#ff6b81','#a29bfe','#00cec9'];
+  const shapes = ['■', '●', '▲', '◆', '★'];
+  const count = 60;
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('span');
+    el.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+    const startX = rect.left + Math.random() * rect.width;
+    const startY = rect.top + rect.height * 0.5 + window.scrollY;
+    const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.1;
+    const speed = 180 + Math.random() * 260;
+    const vx = Math.cos(angle) * speed;
+    const vy = Math.sin(angle) * speed;
+    const size = 8 + Math.random() * 10;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const rotSpeed = (Math.random() - 0.5) * 900;
+    const delay = Math.random() * 120;
+    Object.assign(el.style, {
+      position: 'fixed',
+      left: startX + 'px',
+      top: (rect.top + rect.height * 0.5) + 'px',
+      fontSize: size + 'px',
+      color,
+      pointerEvents: 'none',
+      zIndex: 9999,
+      transform: 'translate(-50%, -50%)',
+      opacity: '1',
+      userSelect: 'none',
+    });
+    document.body.appendChild(el);
+    let start = null;
+    const duration = 900 + Math.random() * 500;
+    setTimeout(() => {
+      function animate(ts) {
+        if (!start) start = ts;
+        const t = (ts - start) / duration;
+        if (t >= 1) { el.remove(); return; }
+        const ease = 1 - t;
+        const x = startX + vx * t * (duration / 1000);
+        const y = (rect.top + rect.height * 0.5) + vy * t * (duration / 1000) + 0.5 * 900 * Math.pow(t * duration / 1000, 2);
+        const rot = rotSpeed * t;
+        const opacity = t < 0.6 ? 1 : 1 - (t - 0.6) / 0.4;
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        el.style.transform = `translate(-50%, -50%) rotate(${rot}deg)`;
+        el.style.opacity = opacity;
+        requestAnimationFrame(animate);
+      }
+      requestAnimationFrame(animate);
+    }, delay);
+  }
+}
+// Slider
+const slider = document.getElementById('length-slider');
+slider.addEventListener('input', () => {
+  updateUI(generate(+slider.value));
+});
+// Toggles
+document.querySelectorAll('.toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.set;
+    active[key] = !active[key];
+    btn.classList.toggle('active', active[key]);
+    updateUI(generate(+slider.value));
+  });
+});
+// Generate with roulette effect
+let isSpinning = false;
+document.getElementById('gen-btn').addEventListener('click', () => {
+  // If AI mode is open — run AI generation
+  if (aiBlock.classList.contains('open')) {
+    runAiGenerate();
+    return;
+  }
+  // Otherwise — crypto roulette
+  if (isSpinning) return;
+  isSpinning = true;
+  const genBtn = document.getElementById('gen-btn');
+  const outputWrap = document.getElementById('output-wrap');
+  const actionsEl = document.querySelector('.actions');
+  const paramsBlock = document.getElementById('crypto-block');
+  const keys = ['uppercase', 'lowercase', 'digits', 'symbols'];
+  const totalDuration = 2200;
+  const startTime = Date.now();
+  // Hide buttons and block border
+  actionsEl.style.transition = 'opacity 0.3s';
+  actionsEl.style.opacity = '0';
+  actionsEl.style.pointerEvents = 'none';
+  paramsBlock.style.transition = 'border-color 0.3s';
+  paramsBlock.style.borderColor = 'transparent';
+  // Page background animation — darken and back
+  let bgInterval = setInterval(() => {
+    const elapsed = Date.now() - startTime;
+    const progress = elapsed / totalDuration;
+    const wave = Math.sin(progress * Math.PI * 6) * (1 - progress);
+    const darkness = Math.round(200 + wave * 40);
+    document.body.style.background = `rgb(${darkness},${darkness},${darkness})`;
+  }, 30);
+  // Roulette — interval speeds up at start and slows down at end (like a ball)
+  let frameCount = 0;
+  const totalFrames = 38;
+  function getDelay(frame) {
+    const t = frame / totalFrames;
+    return 30 + Math.pow(t, 2.2) * 280;
+  }
+  function spinFrame() {
+    if (frameCount >= totalFrames) {
+      // Final result
+      clearInterval(bgInterval);
+      document.body.style.background = '#fff';
+      const finalLen = 16 + Math.floor(Math.random() * 33);
+      slider.value = finalLen;
+      const shuffled = [...keys].sort(() => Math.random() - 0.5);
+      const count = 2 + Math.floor(Math.random() * 3);
+      keys.forEach(k => { active[k] = false; });
+      shuffled.slice(0, count).forEach(k => { active[k] = true; });
+      document.querySelectorAll('.toggle-btn').forEach(b => {
+        b.classList.toggle('active', active[b.dataset.set]);
+      });
+      updateUI(generate(finalLen));
+      // Confetti from password field
+      launchConfetti();
+      // Restore buttons and border
+      actionsEl.style.opacity = '1';
+      actionsEl.style.pointerEvents = '';
+      paramsBlock.style.borderColor = '#e8e8e8';
+      genBtn.disabled = false;
+      genBtn.style.opacity = '1';
+      isSpinning = false;
+      return;
+    }
+    // Intermediate frame — random parameters
+    const len = 8 + Math.floor(Math.random() * 57);
+    slider.value = len;
+    const shuffled = [...keys].sort(() => Math.random() - 0.5);
+    const count = 1 + Math.floor(Math.random() * 4);
+    keys.forEach(k => { active[k] = false; });
+    shuffled.slice(0, count).forEach(k => { active[k] = true; });
+    document.querySelectorAll('.toggle-btn').forEach(b => {
+      b.classList.toggle('active', active[b.dataset.set]);
+    });
+    // Password without smooth color transition to make it flash
+    const pwd = generate(len);
+    currentPassword = pwd;
+    document.getElementById('password-display').textContent = pwd;
+    const bits = entropy(pwd);
+    const s = strengthInfo(bits);
+    outputWrap.style.transition = 'none';
+    outputWrap.style.background = s.color;
+    document.getElementById('strength-label').textContent = s.label;
+    document.getElementById('strength-label').style.color = s.color;
+    document.getElementById('entropy-label').textContent = bits + ' ' + t('bits') + ' · ' + pwd.length + ' ' + t('chars');
+    frameCount++;
+    setTimeout(spinFrame, getDelay(frameCount));
+  }
+  // Restore transition after animation
+  setTimeout(() => { outputWrap.style.transition = 'background 0.4s'; }, totalDuration + 200);
+  spinFrame();
+});
+// Copy
+document.getElementById('copy-btn').addEventListener('click', () => {
+  copyText(currentPassword, document.getElementById('copy-btn'));
+});
+// Save popup
+const overlay       = document.getElementById('popup-overlay');
+const filenameInput = document.getElementById('filename-input');
+const downloadBtn   = document.getElementById('popup-download');
+const pwdPreview    = document.getElementById('popup-pwd-preview');
+document.getElementById('save-btn').addEventListener('click', () => {
+  pwdPreview.textContent = currentPassword;
+  filenameInput.value = '';
+  downloadBtn.disabled = true;
+  overlay.style.display = 'flex';
+  setTimeout(() => filenameInput.focus(), 60);
+});
+document.getElementById('popup-cancel').addEventListener('click', () => {
+  overlay.style.display = 'none';
+});
+overlay.addEventListener('click', (e) => {
+  if (e.target === overlay) overlay.style.display = 'none';
+});
+filenameInput.addEventListener('input', () => {
+  downloadBtn.disabled = filenameInput.value.trim().length === 0;
+});
+filenameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter'  && !downloadBtn.disabled) downloadBtn.click();
+  if (e.key === 'Escape') overlay.style.display = 'none';
+});
+downloadBtn.addEventListener('click', () => {
+  const name = filenameInput.value.trim();
+  if (!name) return;
+  const blob = new Blob([currentPassword], { type: 'text/plain' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = name + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  overlay.style.display = 'none';
+});
+// AI accordion
+const aiBlock  = document.getElementById('ai-block');
+const aiToggle = document.getElementById('ai-toggle');
+const cryptoBlock  = document.getElementById('crypto-block');
+const cryptoToggle = document.getElementById('crypto-toggle');
+cryptoToggle.addEventListener('click', () => {
+  const opening = !cryptoBlock.classList.contains('open');
+  cryptoBlock.classList.toggle('open', opening);
+  if (opening) aiBlock.classList.remove('open');
+});
+aiToggle.addEventListener('click', () => {
+  const opening = !aiBlock.classList.contains('open');
+  aiBlock.classList.toggle('open', opening);
+  if (opening) cryptoBlock.classList.remove('open');
+});
+// AI tags
+let activeThemes = new Set();
+document.querySelectorAll('.ai-tag').forEach(tag => {
+  tag.addEventListener('click', () => {
+    tag.classList.toggle('active');
+    const t = tag.dataset.theme;
+    activeThemes.has(t) ? activeThemes.delete(t) : activeThemes.add(t);
+  });
+});
+// AI separator
+let activeSep = '-';
+document.querySelectorAll('.ai-sep').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ai-sep').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeSep = btn.dataset.sep;
+  });
+});
+// AI generate (stub — simulated request)
+const aiGenBtn = document.getElementById('ai-gen-btn');
+const WORD_POOLS = {
+  colors:  ['Red','Blue','Coral','Amber','Violet','Teal','Crimson','Ivory','Jade','Slate'],
+  food:    ['Ramen','Mango','Basil','Tahini','Cocoa','Lemon','Saffron','Wasabi','Peach','Truffle'],
+  animals: ['Tiger','Falcon','Otter','Lynx','Crane','Bison','Viper','Gecko','Panda','Raven'],
+  cities:  ['Oslo','Kyoto','Cairo','Lima','Bruges','Hanoi','Tbilisi','Porto','Dakar','Minsk'],
+  nature:  ['Storm','Creek','Dune','Frost','Reef','Fjord','Canopy','Geyser','Mesa','Pollen'],
+  names:   ['Axel','Mira','Leon','Saya','Otto','Dara','Cleo','Ivan','Noa','Remy'],
+  space:   ['Pulsar','Nebula','Quasar','Comet','Zenith','Vega','Orbit','Photon','Titan','Aurora'],
+  music:   ['Tempo','Chord','Riff','Bassline','Harmony','Synth','Tremolo','Groove','Pitch','Echo'],
+};
+function pickWords() {
+  const custom = document.getElementById('ai-custom').value.trim();
+  let pool = [];
+  activeThemes.forEach(t => { if (WORD_POOLS[t]) pool.push(...WORD_POOLS[t]); });
+  if (pool.length === 0) {
+    // Use all categories if nothing is selected
+    Object.values(WORD_POOLS).forEach(p => pool.push(...p));
+  }
+  // 3–4 random words
+  const count = 3 + Math.floor(Math.random() * 2);
+  const words = [];
+  for (let i = 0; i < count; i++) {
+    words.push(pool[Math.floor(Math.random() * pool.length)]);
+  }
+  return words.join(activeSep);
+}
+function runAiGenerate() {
+  const genBtn = document.getElementById('gen-btn');
+  const origHTML = genBtn.innerHTML;
+  genBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;animation:spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> ' + t('generating');
+  genBtn.disabled = true;
+  setTimeout(() => {
+    const result = pickWords();
+    const words = result.split(/[-._]/);
+    const poolSize = (() => {
+      let p = new Set();
+      activeThemes.forEach(t => { if (WORD_POOLS[t]) WORD_POOLS[t].forEach(w => p.add(w)); });
+      if (p.size === 0) Object.values(WORD_POOLS).forEach(arr => arr.forEach(w => p.add(w)));
+      return p.size;
+    })();
+    const bits = Math.round(words.length * Math.log2(poolSize));
+    const s = strengthInfo(bits);
+    currentPassword = result;
+    document.getElementById('password-display').textContent = result;
+    document.getElementById('output-wrap').style.background = s.color;
+    document.getElementById('strength-label').textContent = s.label;
+    document.getElementById('strength-label').style.color = s.color;
+    document.getElementById('entropy-label').textContent = bits + ' ' + t('bits') + ' · ' + result.length + ' ' + t('chars');
+    genBtn.innerHTML = origHTML;
+    genBtn.disabled = false;
+    launchConfetti();
+  }, 900 + Math.random() * 600);
+}
+// Spin keyframe for loader
+const styleEl = document.createElement('style');
+styleEl.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+document.head.appendChild(styleEl);
+// Onboarding
+(function() {
+  const obOverlay = document.getElementById('onboarding-overlay');
+  const obNext    = document.getElementById('ob-next');
+  const obSkip    = document.getElementById('ob-skip');
+  const obDots    = document.querySelectorAll('.ob-dot');
+  const obSlides  = document.querySelectorAll('.ob-slide');
+  let current = 0;
+  function showSlide(n) {
+    obSlides.forEach(s => s.classList.remove('active'));
+    obDots.forEach(d => d.classList.remove('active'));
+    obSlides[n].classList.add('active');
+    obDots[n].classList.add('active');
+    obNext.textContent = n === obSlides.length - 1 ? t('gotIt') : t('next');
+    obSkip.style.visibility = n === obSlides.length - 1 ? 'hidden' : 'visible';
+    const vsl = document.getElementById('view-source-link');
+    if (vsl) vsl.href = 'view-source:' + location.href;
+  }
+  function closeOnboarding() {
+    obOverlay.style.display = 'none';
+    try { localStorage.setItem('cryptograf_seen', '1'); } catch(e) {}
+  }
+  obNext.addEventListener('click', () => {
+    if (current < obSlides.length - 1) {
+      current++;
+      showSlide(current);
+    } else {
+      closeOnboarding();
+    }
+  });
+  obSkip.addEventListener('click', closeOnboarding);
+  obDots.forEach((dot, i) => {
+    dot.addEventListener('click', () => { current = i; showSlide(i); });
+  });
+  let seen = false;
+  try { seen = !!localStorage.getItem('cryptograf_seen'); } catch(e) {}
+  if (!seen) {
+    obOverlay.style.display = 'flex';
+    showSlide(0);
+  }
+  document.getElementById('onboarding-link').addEventListener('click', () => {
+    current = 0;
+    showSlide(0);
+    obOverlay.style.display = 'flex';
+  });
+})();
+// Init
+updateUI(generate(32));
+applyLang();
+</script>
+</body>
+</html>
