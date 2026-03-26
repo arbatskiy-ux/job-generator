@@ -22,8 +22,8 @@ Prompts are stored in Notion and fetched on every generation — update the prom
 
 - **Vanilla HTML/CSS/JS** — single file, no frameworks or build tools
 - **Material Design 3** — tokens, surface tint elevation, Extended FAB, shimmer skeleton
-- **Claude API** (claude-sonnet-4) — parallel generation of resume and cover letter
-- **Notion API** — system prompt storage, fetched on every request
+- **Multi-provider support** — Groq, OpenRouter, or Cloudflare Workers AI
+- **Flexible AI models** — works with any model from supported providers
 
 ## Project structure
 
@@ -34,17 +34,13 @@ job-generator/
 
 ## Setup
 
-1. Open \`job-generator.html\` in any text editor
-2. Find the constants at the top of the script and insert your keys:
-
-\`\`\`js
-const CLAUDE_KEY = 'sk-ant-...';
-const NOTION_KEY = 'secret_...';
-const NOTION_RESUME_ID = '...';
-const NOTION_LETTER_ID = '...';
-\`\`\`
-
-3. Open the file in a browser or deploy to a server
+1. Open \`job-generator.html\` in a browser
+2. Choose your AI provider from the settings:
+   - **Groq** — free tier, fast inference
+   - **OpenRouter** — supports multiple models
+   - **Cloudflare Workers AI** — requires account ID and API key
+3. Enter your API key for the chosen provider
+4. Load or paste a resume, add job description, and click Generate
 
 ## Deploy to VPS
 
