@@ -54,12 +54,37 @@ scp job-generator.html user@server:/var/www/html/job-generator.html
 
 ## Features
 
-- Parallel generation of resume and cover letter in a single request
-- Automatic detection and parsing of the verification block (PASSED / FAILED + score %)
-- Shimmer skeleton during loading
-- Light and dark theme with localStorage persistence
-- Cmd+Enter shortcut for quick generation
-- Copy button — copies only the clean text without the verification block
+- **Parallel generation** of resume and cover letter in a single request
+- **Automatic detection** and parsing of the verification block (PASSED / FAILED + score %)
+- **Shimmer skeleton** during loading
+- **Light and dark theme** with localStorage persistence
+- **Cmd+Enter shortcut** for quick generation
+- **Copy button** — copies only the clean text without the verification block
+- **Resume Bank** — save multiple resume variants to localStorage for quick access across sessions
+- **CSV Export** — download generation history as CSV for easy import to Google Sheets
+
+## Resume Bank (v2 Feature)
+
+Save and manage multiple resume variants without uploading files:
+
+1. Type or paste your resume text in the modal
+2. The save button appears automatically when text exceeds 10 characters
+3. Click **💾 Сохранить как резюме** to save the variant
+4. Saved resumes appear in the resume dropdown for quick selection
+5. All variants are stored in browser localStorage — persists across sessions
+
+**Use case:** Keep multiple resume versions (generic, tech-focused, leadership-focused) and quickly switch between them.
+
+## CSV Export (v2 Feature)
+
+Export your generation history to CSV format for backup and analysis:
+
+1. Click **⬆️ В Google Sheets** button in the history panel
+2. A CSV file downloads with columns: Date, Time, Company, Industry, AI Model, Resume, Letter
+3. Open the file in Google Sheets, Excel, or any spreadsheet app
+4. All text is properly escaped — special characters (quotes, commas) are handled correctly
+
+**Use case:** Track job applications, analyze which prompts work best, create reports for job search progress.
 
 ## Author
 
