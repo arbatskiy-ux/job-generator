@@ -13,10 +13,10 @@ An AI-powered tool for automatically tailoring resumes and writing cover letters
 
 1. Paste the job description
 2. Click **Generate**
-3. Claude adapts the resume to the job requirements and writes a cover letter
+3. AI adapts the resume to the job requirements and writes a cover letter
 4. Each result is automatically checked for hallucinations with a percentage score
 
-Prompts are stored in Notion and fetched on every generation — update the prompt in Notion and the tool picks it up without any code changes.
+Prompts are built-in templates — edit them in the code if you need to customize the logic or output format.
 
 ## Stack
 
